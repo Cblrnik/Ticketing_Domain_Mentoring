@@ -1,56 +1,92 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ticketing.Db.Models;
+﻿using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class VenueRepository
+    public class VenueRepository : Repository<Venue>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Venue";
+        private readonly Repository<Section> _sectionRepository;
 
-        public VenueRepository(IConnectionStringProvider connectionStringProvider)
+        public VenueRepository(IConnectionStringProvider connectionStringProvider, Repository<Section> sectionRepository) : base(connectionStringProvider, "Venue")
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            _sectionRepository = sectionRepository;
         }
 
-        public IEnumerable<Venue> GetAllVenues()
+        public override async Task<ICollection<Venue>> GetAll()
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            var venues = _dataAccess.Query<Venue>(sql).ToList();
+            await base.GetAll();
 
-            return venues;
+            foreach (var venue in Entities)
+            {
+                venue.Sections = await GetSections(venue.Id).ConfigureAwait(false);
+            }
+
+            return Entities;
         }
 
-        public Venue GetVenueById(int venueId)
+        public override async Task<int> Create(Venue entity)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @VenueId";
-            var venue = _dataAccess.QueryFirstOrDefault<Venue>(sql, new { VenueId = venueId });
+            var sql = $"INSERT INTO [{TableName}] (Name, Address) VALUES (@Name, @Address)";
+            RefreshCache();
+            entity.Id = await ExecuteAsync(sql, entity);
 
-            return venue;
+            if (entity.Sections != null) await CreateSections(entity.Sections, entity.Id);
+
+            return entity.Id;
         }
 
-        public void AddVenue(Venue venue)
+        public override async Task Update(Venue entity)
         {
-            const string sql = $"INSERT INTO {TableName} (Name, Address) VALUES (@Name, @Address)";
-            _dataAccess.Execute(sql, venue);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Address = @Address WHERE Id = @Id";
+            await ExecuteAsync(sql, entity);
+            RefreshCache();
+
+            if (entity.Sections != null) await UpdateSectionsVenue(entity.Sections, entity.Id);
         }
 
-        public void UpdateVenue(Venue venue)
+        public override async Task Delete(int id)
         {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, Address = @Address WHERE Id = @Id";
-            _dataAccess.Execute(sql, venue);
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @Id";
+            await ExecuteAsync(sql, new { Id = id });
+            RefreshCache();
+
+            await DeleteSections(id);
         }
 
-        public void DeleteVenue(int venueId)
+        private async Task<ICollection<Section>> GetSections(int id)
         {
-            const string deleteVenueSql = $"DELETE FROM {TableName} WHERE Id = @VenueId";
-            _dataAccess.Execute(deleteVenueSql, new { VenueId = venueId });
+            var sql = "SELECT * FROM Section WHERE VenueId = @Id";
+            return await QueryAsync<Section>(sql, new { Id = id });
         }
 
+        public async Task CreateSections(IEnumerable<Section> sections, int venueId)
+        {
+            foreach (var section in sections)
+            {
+                await _sectionRepository.Create(section);
+            }
+
+            await UpdateSectionsVenue(sections, venueId);
+        }
+
+        public async Task UpdateSectionsVenue(IEnumerable<Section> sections, int venueId)
+        {
+            foreach (var section in sections)
+            {
+                var sql = "UPDATE Section SET VenueId = @VenueId WHERE Id = @Id";
+                await ExecuteAsync(sql, new { VenueId = venueId, section.Id });
+            }
+        }
+
+        private async Task DeleteSections(int id)
+        {
+            var sql = "SELECT Id FROM [Section] WHERE VenueId = @Id";
+
+            var ids = await QueryAsync<int>(sql, new { Id = id });
+            foreach (var sectionId in ids)
+            {
+                await _sectionRepository.Delete(sectionId);
+            }
+        }
     }
 }

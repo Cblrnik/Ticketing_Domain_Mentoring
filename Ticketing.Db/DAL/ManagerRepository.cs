@@ -3,44 +3,30 @@ using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class ManagerRepository
+    public class ManagerRepository : Repository<Manager>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Manager";
+        public ManagerRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Manager")
+        {}
 
-        public ManagerRepository(IConnectionStringProvider connectionStringProvider)
+        public override async Task<int> Create(Manager entity)
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            var sql = $"INSERT INTO [{TableName}] (Id, Name, Login, Password) VALUES (@Id, @Name, @Login, @Password)";
+            RefreshCache();
+            return await ExecuteAsync(sql, entity);
         }
 
-        public IEnumerable<Manager> GetAllManagers()
+        public override async Task Update(Manager entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<Manager>(sql);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Login = @Login, Password = @Password WHERE Id = @Id";
+            await ExecuteAsync(sql, entity);
+            RefreshCache();
         }
 
-        public Manager GetManagerById(Guid managerId)
+        public override async Task Delete(int id)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @ManagerId";
-            return _dataAccess.QueryFirstOrDefault<Manager>(sql, new { ManagerId = managerId });
-        }
-
-        public void AddManager(Manager manager)
-        {
-            const string sql = $"INSERT INTO {TableName} (Id, Name, Login, Password) VALUES (@Id, @Name, @Login, @Password)";
-            _dataAccess.Execute(sql, manager);
-        }
-
-        public void UpdateManager(Manager manager)
-        {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, Login = @Login, Password = @Password WHERE Id = @Id";
-            _dataAccess.Execute(sql, manager);
-        }
-
-        public void DeleteManager(Guid managerId)
-        {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @ManagerId";
-            _dataAccess.Execute(sql, new { ManagerId = managerId });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @ManagerId";
+            await ExecuteAsync(sql, new { CustomerId = id });
+            RefreshCache();
         }
     }
 }

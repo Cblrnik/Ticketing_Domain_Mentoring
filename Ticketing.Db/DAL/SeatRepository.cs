@@ -1,51 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ticketing.Db.Models;
+﻿using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class SeatRepository
+    public class SeatRepository : Repository<Seat>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Seat";
 
-        public SeatRepository(IConnectionStringProvider connectionStringProvider)
+        public SeatRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Seat")
+        {}
+
+        public override async Task<int> Create(Seat entity)
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            var sql = $"INSERT INTO [{TableName}] (Name, Status) VALUES (@Name, @Status)";
+            RefreshCache();
+            return await ExecuteAsync(sql, entity);
         }
 
-        public IEnumerable<Seat> GetAllSeats()
+        public override async Task Update(Seat entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<Seat>(sql);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Status = @Status WHERE Id = @Id";
+            await ExecuteAsync(sql, entity);
+            RefreshCache();
         }
 
-        public Seat GetSeatById(int seatId)
+        public override async Task Delete(int id)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @SeatId";
-            return _dataAccess.QueryFirstOrDefault<Seat>(sql, new { SeatId = seatId });
-        }
-
-        public void AddSeat(Seat seat)
-        {
-            const string sql = $"INSERT INTO {TableName} (Name, OfferId) VALUES (@Name, @OfferId)";
-            _dataAccess.Execute(sql, new { seat.Name, OfferId = seat.Offer?.Id });
-        }
-
-        public void UpdateSeat(Seat seat)
-        {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, OfferId = @OfferId WHERE Id = @Id";
-            _dataAccess.Execute(sql, new { seat.Name, OfferId = seat.Offer?.Id, seat.Id });
-        }
-
-        public void DeleteSeat(int seatId)
-        {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @SeatId";
-            _dataAccess.Execute(sql, new { SeatId = seatId });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @SeatId";
+            await ExecuteAsync(sql, new { SeatId = id });
+            RefreshCache();
         }
     }
 }

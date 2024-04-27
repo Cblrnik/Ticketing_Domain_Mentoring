@@ -1,46 +1,50 @@
-﻿using Ticketing.Db.Models;
+﻿using System.Xml.Linq;
+using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class EventRepository
+    public class EventRepository : Repository<Event>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Event";
+        public EventRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Event")
+        {}
 
-        public EventRepository(IConnectionStringProvider connectionStringProvider)
+        public override async Task<int> Create(Event entity)
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            var sql = $"INSERT INTO [{TableName}] (Name, Description, VenueId, StartDate, EndDate) VALUES (@Name, @Description, @VenueId, @StartDate, @EndDate)";
+            RefreshCache();
+            
+            entity.Id = await ExecuteAsync(sql, new
+            {
+                entity.Name,
+                entity.Description,
+                VenueId = entity.Venue?.Id,
+                entity.StartDate,
+                entity.EndDate
+            });
+            return entity.Id;
         }
 
-        public IEnumerable<Event> GetAllEvents()
+        public override async Task Update(Event entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<Event>(sql);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Description = @Description, VenueId = @VenueId, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
+            await ExecuteAsync(sql, new
+            {
+                entity.Name,
+                entity.Description,
+                VenueId = entity.Venue?.Id,
+                entity.StartDate,
+                entity.EndDate,
+                entity.Id
+            });
+            RefreshCache();
         }
 
-        public Event GetEventById(int eventId)
+        public override async Task Delete(int id)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @EventId";
-            return _dataAccess.QueryFirstOrDefault<Event>(sql, new { EventId = eventId });
-        }
-
-        public void AddEvent(Event @event)
-        {
-            const string sql = $"INSERT INTO {TableName} (Name, Description, VenueId, StartDate, EndDate) VALUES (@Name, @Description, @VenueId, @StartDate, @EndDate)";
-            _dataAccess.Execute(sql, @event);
-        }
-
-        public void UpdateEvent(Event @event)
-        {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, Description = @Description, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
-            _dataAccess.Execute(sql, @event);
-        }
-
-        public void DeleteEvent(int eventId)
-        {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @EventId";
-            _dataAccess.Execute(sql, new { EventId = eventId });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @EventId";
+            await ExecuteAsync(sql, new { EventId = id });
+            RefreshCache();
         }
     }
 }

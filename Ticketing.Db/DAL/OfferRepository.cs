@@ -1,89 +1,107 @@
-﻿using System;
-using Ticketing.Db.Models;
+﻿using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class OfferRepository
+    public class OfferRepository : Repository<Offer>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Offer";
+        public OfferRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Offer")
+        {}
 
-        public OfferRepository(IConnectionStringProvider connectionStringProvider)
+        public override async Task<ICollection<Offer>> GetAll()
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
-        }
+            await base.GetAll();
 
-        public IEnumerable<Offer> GetAllOffers()
-        {
-            const string sql = $"SELECT * FROM {TableName}";
-            var offers = _dataAccess.Query<Offer>(sql).ToList();
-
-            foreach (var offer in offers)
+            foreach (var offer in Entities)
             {
-                offer.PriceLevels = GetPriceLevelsForOffer(offer.Id);
+                offer.Event = await GetEventForOffer(offer.Id).ConfigureAwait(false);
+                offer.Seats = await GetSeatsForOffer(offer.Id).ConfigureAwait(false);
+                offer.PriceLevels = await GetPriceLevelsForOffer(offer.Id).ConfigureAwait(false);
             }
 
-            return offers;
+            return Entities;
         }
 
-        public Offer GetOfferById(int offerId)
+        public override async Task<int> Create(Offer entity)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @OfferId";
-            var offer = _dataAccess.QueryFirstOrDefault<Offer>(sql, new { OfferId = offerId });
+            var sql = $"INSERT INTO [{TableName}] (Name, Price, EventId) VALUES (@Name, @Price, @EventId)";
+            RefreshCache();
+            var id = await ExecuteAsync(sql, new { entity.Name, entity.Price, entity.Event?.Id });
 
-            offer.PriceLevels = GetPriceLevelsForOffer(offer.Id);
+            if (entity.Seats != null) await CreateSeatsOffer(entity.Seats, id);
+            if (entity.PriceLevels != null) await CreateTicketPriceLevelsOffer(entity.PriceLevels, id);
 
-            return offer;
+            return id;
         }
 
-        public void AddOffer(Offer offer)
+        public override async Task Update(Offer entity)
         {
-            const string sql = $"INSERT INTO {TableName} (Name, Price) VALUES (@Name, @Price)";
-            _dataAccess.Execute(sql, offer);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Price = @Price, EventId = @EventId WHERE Id = @Id";
+            await ExecuteAsync(sql, new { entity.Name, entity.Price, entity.Event?.Id });
+            RefreshCache();
 
-            if (offer.PriceLevels == null || !offer.PriceLevels.Any()) return;
-            foreach (var priceLevel in offer.PriceLevels)
+            if (entity.Seats != null) await CreateSeatsOffer(entity.Seats, entity.Id);
+            if (entity.PriceLevels != null) await CreateTicketPriceLevelsOffer(entity.PriceLevels, entity.Id);
+        }
+
+        public override async Task Delete(int id)
+        {
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @Id";
+            await ExecuteAsync(sql, new { Id = id });
+            RefreshCache();
+
+            await ClearSeats(id);
+            await ClearPriceLevels(id);
+        }
+
+        private async Task<Event> GetEventForOffer(int id)
+        {
+            var sql = $"SELECT * FROM Event WHERE Id IN (SELECT EventId FROM [{TableName}] WHERE Id = @Id)";
+            return await QueryFirstOrDefaultAsync<Event>(sql, new { Id = id });
+        }
+
+        private async Task<ICollection<Seat>> GetSeatsForOffer(int id)
+        {
+            var sql = "SELECT * FROM Seat WHERE Id IN (SELECT SeatId FROM SeatOffers WHERE OfferId = @Id)";
+            return await QueryAsync<Seat>(sql, new { Id = id });
+        }
+
+        private async Task<ICollection<TicketPriceLevel>> GetPriceLevelsForOffer(int id)
+        {
+            var sql = "SELECT * FROM TicketPriceLevel WHERE Id IN (SELECT PriceLevelId FROM OfferPriceLevels WHERE OfferId = @Id)";
+            return await QueryAsync<TicketPriceLevel>(sql, new { Id = id });
+        }
+
+        public async Task CreateSeatsOffer(IEnumerable<Seat> seats, int offerId)
+        {
+            await ClearSeats(offerId);
+            foreach (var seat in seats)
             {
-                AddPriceLevelForOffer(offer.Id, priceLevel);
+                var sql = "INSERT INTO [SeatOffers] (OfferId, SeatId) VALUES (@Id, @SeatId)";
+                await ExecuteAsync(sql, new { SeatId = seat.Id, Id = offerId });
             }
         }
 
-        public void UpdateOffer(Offer offer)
+        public async Task CreateTicketPriceLevelsOffer(IEnumerable<TicketPriceLevel> ticketPriceLevels, int offerId)
         {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, Price = @Price WHERE Id = @Id";
-            _dataAccess.Execute(sql, offer);
-
-            if (offer.PriceLevels == null || !offer.PriceLevels.Any()) return;
-
-            const string deleteSql = "DELETE FROM OfferPriceLevels WHERE OfferId = @OfferId";
-            _dataAccess.Execute(deleteSql, new { OfferId = offer.Id });
-
-            foreach (var priceLevel in offer.PriceLevels)
+            await ClearSeats(offerId);
+            foreach (var ticketPriceLevel in ticketPriceLevels)
             {
-                AddPriceLevelForOffer(offer.Id, priceLevel);
+                var sql = "INSERT INTO [OfferPriceLevels] (OfferId, PriceLevelId) VALUES (@Id, @TicketPriceLevelId)";
+                await ExecuteAsync(sql, new { TicketPriceLevelId = ticketPriceLevel.Id, Id = offerId });
             }
         }
 
-        public void DeleteOffer(int offerId)
+        private async Task ClearSeats(int id)
         {
-            const string deleteOfferSql = $"DELETE FROM {TableName} WHERE Id = @OfferId";
-            _dataAccess.Execute(deleteOfferSql, new { OfferId = offerId });
-
-            const string deleteSql = "DELETE FROM OfferPriceLevels WHERE OfferId = @OfferId";
-            _dataAccess.Execute(deleteSql, new { OfferId = offerId });
+            var sql = "DELETE FROM SeatOffers WHERE OfferId = @Id";
+            await ExecuteAsync(sql, new { Id = id });
         }
 
-        private IEnumerable<TicketPriceLevel> GetPriceLevelsForOffer(int offerId)
+        public async Task ClearPriceLevels(int id)
         {
-            const string sql = "SELECT * FROM TicketPriceLevel WHERE Id IN (SELECT PriceLevelId FROM OfferPriceLevels WHERE OfferId = @OfferId)";
-            return _dataAccess.Query<TicketPriceLevel>(sql, new { OfferId = offerId });
-        }
-
-        private void AddPriceLevelForOffer(int offerId, TicketPriceLevel priceLevel)
-        {
-            const string sql = "INSERT INTO OfferPriceLevels (OfferId, PriceLevelId) VALUES (@OfferId, @PriceLevelId)";
-            _dataAccess.Execute(sql, new { OfferId = offerId, PriceLevelId = priceLevel.Id });
+            var sql = "DELETE FROM OfferPriceLevels WHERE OfferId = @Id";
+            await ExecuteAsync(sql, new { Id = id });
         }
     }
 }

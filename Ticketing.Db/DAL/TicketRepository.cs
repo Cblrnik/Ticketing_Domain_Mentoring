@@ -3,45 +3,58 @@ using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class TicketRepository
+    public class TicketRepository : Repository<Ticket>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Ticket";
 
-        public TicketRepository(IConnectionStringProvider connectionStringProvider)
+        public TicketRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Ticket")
+        {}
+
+        public override async Task<ICollection<Ticket>> GetAll()
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            await base.GetAll();
+
+            foreach (var ticket in Entities)
+            {
+                ticket.Event = await GetEventForTicket(ticket.Id).ConfigureAwait(false);
+                ticket.Seat = await GetSeatForOrder(ticket.Id).ConfigureAwait(false);
+            }
+
+            return Entities;
         }
 
-        public IEnumerable<Ticket> GetAllTickets()
+        public override async Task<int> Create(Ticket entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<Ticket>(sql);
+            var sql = $"INSERT INTO [{TableName}] (EventId, SeatId, OrderId, Status) VALUES (@EventId, @SeatId, null, 0)";
+            RefreshCache();
+            var id = await ExecuteAsync(sql, new { EventId = entity.Event?.Id, SeatId = entity.Seat?.Id});
+
+            return id;
         }
 
-        public Ticket GetTicketById(Guid ticketId)
+        public override async Task Update(Ticket entity)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @TicketId";
-            return _dataAccess.QueryFirstOrDefault<Ticket>(sql, new { TicketId = ticketId });
+            var sql = $"UPDATE [{TableName}] SET EventId = @EventId, SeatId = @SeatId, Status = @Status WHERE Id = @Id";
+            RefreshCache();
+            await ExecuteAsync(sql, new { EventId = entity.Event?.Id, SeatId = entity.Seat?.Id, entity.Status, entity.Id });
         }
 
-        public void AddTicket(Ticket ticket)
+        public override async Task Delete(int id)
         {
-            const string sql = $"INSERT INTO {TableName} (CustomerId, EventId, SeatId, SectionId, Status) VALUES (@CustomerId, @EventId, @SeatId, @SectionId, @Status)";
-            _dataAccess.Execute(sql, new { CustomerId = ticket.Customer?.Id, EventId = ticket.Event?.Id, SeatId = ticket.Seat?.Id, SectionId = ticket.Section?.Id, ticket.Status });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @Id";
+            await ExecuteAsync(sql, new { Id = id });
         }
 
-        public void UpdateTicket(Ticket ticket)
+
+        private async Task<Event> GetEventForTicket(int id)
         {
-            const string sql = $"UPDATE {TableName} SET CustomerId = @CustomerId, EventId = @EventId, SeatId = @SeatId, SectionId = @SectionId, Status = @Status WHERE Id = @Id";
-            _dataAccess.Execute(sql, new { CustomerId = ticket.Customer?.Id, EventId = ticket.Event?.Id, SeatId = ticket.Seat?.Id, SectionId = ticket.Section?.Id, ticket.Status,
-                ticket.Id });
+            var sql = $"SELECT * FROM Event WHERE Id IN (SELECT EventId FROM [{TableName}] WHERE Id = @Id)";
+            return await QueryFirstOrDefaultAsync<Event>(sql, new { Id = id });
         }
 
-        public void DeleteTicket(Guid ticketId)
+        private async Task<Seat> GetSeatForOrder(int id)
         {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @TicketId";
-            _dataAccess.Execute(sql, new { TicketId = ticketId });
+            var sql = $"SELECT * FROM Seat WHERE Id IN (SELECT EventId FROM [{TableName}] WHERE Id = @Id)";
+            return await QueryFirstOrDefaultAsync<Seat>(sql, new { Id = id });
         }
     }
 }

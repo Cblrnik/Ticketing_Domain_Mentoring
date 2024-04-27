@@ -1,6 +1,6 @@
 ﻿namespace Ticketing.Db.Models
 {
-    public class Order
+    public class Order : IIdentity
     {
         public int Id { get; set; }
 
