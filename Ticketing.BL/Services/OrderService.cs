@@ -6,15 +6,13 @@ namespace Ticketing.BL.Services
 {
     public class OrderService
     {
-        private readonly Repository<Order> _orderRepository;
         private readonly Repository<Seat> _seatRepository;
         private readonly Repository<Offer> _offerRepository;
         private readonly Repository<TicketPriceLevel> _ticketPriceLevelRepository;
         private readonly CartProvider _cartProvider;
 
-        public OrderService(Repository<Order> orderRepository, Repository<Seat> seatRepository, Repository<Offer> offerRepository, Repository<TicketPriceLevel> ticketPriceLevelRepository, CartProvider cartProvider)
+        public OrderService(Repository<Seat> seatRepository, Repository<Offer> offerRepository, Repository<TicketPriceLevel> ticketPriceLevelRepository, CartProvider cartProvider)
         {
-            _orderRepository = orderRepository;
             _seatRepository = seatRepository;
             _offerRepository = offerRepository;
             _ticketPriceLevelRepository = ticketPriceLevelRepository;
