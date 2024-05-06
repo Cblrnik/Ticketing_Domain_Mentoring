@@ -66,9 +66,9 @@ namespace Ticketing.Tests
                 Seats = seats
             };
 
-            ticketPriceLevelRepositoryMock.Setup(p => p.GetById(1)).Returns(Task.FromResult(ticketPriceLevels[0]));
-            ticketPriceLevelRepositoryMock.Setup(p => p.GetById(2)).Returns(Task.FromResult(ticketPriceLevels[1]));
-            offerRepositoryMock.Setup(o => o.GetAll()).Returns(Task.FromResult((ICollection<Offer>)new List<Offer> { offer }));
+            ticketPriceLevelRepositoryMock.Setup(p => p.GetById(1)).ReturnsAsync(ticketPriceLevels[0]);
+            ticketPriceLevelRepositoryMock.Setup(p => p.GetById(2)).ReturnsAsync(ticketPriceLevels[1]);
+            offerRepositoryMock.Setup(o => o.GetAll()).ReturnsAsync(new List<Offer> { offer });
 
             var cart = await service.AddToCartAsync(cartProvider.Carts[0].Id, new CartDetails { EventId = 1, PriceId = 1, SeatId = 1});
 

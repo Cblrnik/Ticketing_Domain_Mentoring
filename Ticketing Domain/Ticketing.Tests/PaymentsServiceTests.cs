@@ -74,8 +74,8 @@ namespace Ticketing.Tests
 
 
 
-            paymentRepositoryMock.Setup(p => p.GetById(1)).Returns(Task.FromResult(payment));
-            orderRepositoryMock.Setup(o => o.GetAll()).Returns(Task.FromResult((ICollection<Order>)new List<Order>{ order }));
+            paymentRepositoryMock.Setup(p => p.GetById(1)).ReturnsAsync(payment);
+            orderRepositoryMock.Setup(o => o.GetAll()).ReturnsAsync(new List<Order> { order });
             seatRepositoryMock.Setup(s => s.Update(seats[0])).Returns(Task.Run(() => { }));
             seatRepositoryMock.Setup(s => s.Update(seats[1])).Returns(Task.Run(() => { }));
 
