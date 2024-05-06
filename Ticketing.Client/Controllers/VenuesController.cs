@@ -16,7 +16,7 @@ namespace Ticketing.Api.Client.Controllers
         }
 
         [HttpGet]
-        public async Task<HttpResponseMessage> GetVenues()
+        public async Task<HttpResponseMessage> GetVenuesAsync()
         {
             var venues = await _venueRepository.GetAll();
             return Request.CreateResponse(HttpStatusCode.OK, venues);
@@ -24,7 +24,7 @@ namespace Ticketing.Api.Client.Controllers
 
         [HttpGet]
         [Route("{venueId:int}/sections")]
-        public async Task<HttpResponseMessage> GetSections(int venueId)
+        public async Task<HttpResponseMessage> GetSectionsAsync(int venueId)
         {
             var sections = (await _venueRepository.GetById(venueId)).Sections;
 

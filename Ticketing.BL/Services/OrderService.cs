@@ -26,9 +26,9 @@ namespace Ticketing.BL.Services
             return _cartProvider.Carts.FirstOrDefault(cart => cart.Id == id)!;
         }
 
-        public async Task<Cart> AddToCart(Guid cartId, CartDetails details)
+        public async Task<Cart> AddToCartAsync(Guid cartId, CartDetails details)
         {
-            var offer = await GetOffer(details.EventId, details.SeatId);
+            var offer = await GetOfferAsync(details.EventId, details.SeatId);
             var cart = GetById(cartId);
             cart.OrderDetails.Add(new OrderDetails
             {
@@ -37,12 +37,12 @@ namespace Ticketing.BL.Services
                 SeatId = details.SeatId
             });
 
-            await CalculateAmount(cart);
+            await CalculateAmountAsync(cart);
 
             return cart;
         }
 
-        private async Task<Offer> GetOffer(int eventId, int seatId)
+        private async Task<Offer> GetOfferAsync(int eventId, int seatId)
         {
             return (await _offerRepository.GetAll()).ToList().FirstOrDefault(offer => offer.Event?.Id == eventId && offer.Seats!.Any(item => item.Id == seatId))!;
         }
@@ -50,14 +50,14 @@ namespace Ticketing.BL.Services
         public async Task DeleteSeat(Guid cartId, int eventId, int seatId)
         {
             var cart = GetById(cartId);
-            var offer = await GetOffer(eventId, seatId);
+            var offer = await GetOfferAsync(eventId, seatId);
 
             var index = cart.OrderDetails.FindIndex(details => details.SeatId == seatId && details.OfferId == offer.Id);
 
             cart.OrderDetails.RemoveAt(index);
         }
 
-        public async Task BookSeats(Guid cartId)
+        public async Task BookSeatsAsync(Guid cartId)
         {
             var cart = GetById(cartId);
 
@@ -73,7 +73,7 @@ namespace Ticketing.BL.Services
             }
         }
 
-        private async Task CalculateAmount(Cart cart)
+        private async Task CalculateAmountAsync(Cart cart)
         {
             var amount = 0m;
             foreach (var detail in cart.OrderDetails)

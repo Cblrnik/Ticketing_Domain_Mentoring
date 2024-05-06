@@ -24,16 +24,16 @@ namespace Ticketing.Api.Client.Controllers
 
         [HttpPost]
         [Route("carts/{cartId:Guid}")]
-        public async Task<HttpResponseMessage> AddToCart([FromUri] Guid cartId, [FromBody] CartDetails details)
+        public async Task<HttpResponseMessage> AddToCartAsync([FromUri] Guid cartId, [FromBody] CartDetails details)
         {
-            var cart = await _orderService.AddToCart(cartId, details);
+            var cart = await _orderService.AddToCartAsync(cartId, details);
 
             return Request.CreateResponse(HttpStatusCode.OK, cart);
         }
 
         [HttpDelete]
         [Route("carts/{cartId:Guid}/events/{eventId:int}/seats/{seatId:int}")]
-        public async Task<HttpResponseMessage> DeleteSeatFromCart([FromUri] Guid cartId, [FromUri] int eventId, [FromUri] int seatId)
+        public async Task<HttpResponseMessage> DeleteSeatFromCartAsync([FromUri] Guid cartId, [FromUri] int eventId, [FromUri] int seatId)
         {
             await _orderService.DeleteSeat(cartId, eventId, seatId);
 
@@ -44,7 +44,7 @@ namespace Ticketing.Api.Client.Controllers
         [Route("carts/{cartId:Guid}/book")]
         public async Task<HttpResponseMessage> BookSeats([FromUri] Guid cartId)
         {
-            await _orderService.BookSeats(cartId);
+            await _orderService.BookSeatsAsync(cartId);
 
             return Request.CreateResponse(HttpStatusCode.OK);
         }

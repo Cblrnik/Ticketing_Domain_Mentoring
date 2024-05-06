@@ -32,11 +32,11 @@ namespace Ticketing.Db.DAL
             return (await connection.QueryAsync<Y>(sql, param)).ToList();
         }
 
-        protected async Task<Y> QueryFirstOrDefaultAsync<Y>(string sql, object? param = null)
+        protected async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
         {
             using var connection = GetConnection();
             connection.Open();
-            return (await connection.QueryFirstOrDefaultAsync<Y>(sql, param))!;
+            return (await connection.QueryFirstOrDefaultAsync<T>(sql, param))!;
         }
 
         protected async Task<int> ExecuteAsync(string sql, object? param = null)

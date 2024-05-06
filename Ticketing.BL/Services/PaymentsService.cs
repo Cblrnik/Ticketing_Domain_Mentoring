@@ -16,7 +16,7 @@ namespace Ticketing.BL.Services
             _seatRepository = seatRepository;
         }
 
-        public async Task UpdatePaymentStatus(int paymentId, PaymentStatus status, SeatStatus seatStatus)
+        public async Task UpdatePaymentStatusAsync(int paymentId, PaymentStatus status, SeatStatus seatStatus)
         {
             var payment = await _paymentRepository.GetById(paymentId);
             payment.Status = status;

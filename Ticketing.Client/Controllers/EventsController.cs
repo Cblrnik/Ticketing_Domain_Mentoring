@@ -5,7 +5,7 @@ using Ticketing.Db.Models;
 
 namespace Ticketing.Api.Client.Controllers
 {
-    [Route("/api/venues")]
+    [Route("/api/events")]
     public class EventsController : ApiController
     {
         private readonly Repository<Event> _eventRepository;
@@ -18,7 +18,7 @@ namespace Ticketing.Api.Client.Controllers
         }
 
         [HttpGet]
-        public async Task<HttpResponseMessage> GetEvents()
+        public async Task<HttpResponseMessage> GetEventsAsync()
         {
             var events = await _eventRepository.GetAll();
             return Request.CreateResponse(HttpStatusCode.OK, events);
@@ -26,18 +26,19 @@ namespace Ticketing.Api.Client.Controllers
 
         [HttpGet]
         [Route("{eventId:int}/sections/{sectionId:int}/seats")]
-        public async Task<HttpResponseMessage> GetSections(int eventId, int sectionId)
+        public async Task<HttpResponseMessage> GetSectionsAsync(int eventId, int sectionId)
         {
             var seats = (await _eventRepository.GetById(eventId)).Venue?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Seats?.ToList();
-
-
 
             var prices = (await _offerRepository.GetAll()).Where(offer =>
                 seats != null && seats.Any(seat => 
                     offer.Seats != null && offer.Seats.Contains(seat))).ToList();
 
-
-            if (seats == null) return Request.CreateResponse(HttpStatusCode.BadRequest);
+            if (seats == null)
+            {
+                return Request.CreateResponse(HttpStatusCode.BadRequest);
+            } 
+            else
             {
                 var response = seats.Select(seat => new
                 {
