@@ -1,51 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ticketing.Db.Models;
+﻿using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class TicketPriceLevelRepository
+    public class TicketPriceLevelRepository : Repository<TicketPriceLevel>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "TicketPriceLevel";
 
-        public TicketPriceLevelRepository(IConnectionStringProvider connectionStringProvider)
+        public TicketPriceLevelRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "TicketPriceLevel") 
+        {}
+
+        public override async Task<int> Create(TicketPriceLevel entity)
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            var sql = $"INSERT INTO [{TableName}] (Name, Price) VALUES (@Name, @Price)";
+            RefreshCache();
+            return await ExecuteAsync(sql, entity);
         }
 
-        public IEnumerable<TicketPriceLevel> GetAllTicketPriceLevels()
+        public override async Task Update(TicketPriceLevel entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<TicketPriceLevel>(sql);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Price = @Price WHERE Id = @Id";
+            await ExecuteAsync(sql, entity);
+            RefreshCache();
         }
 
-        public TicketPriceLevel GetTicketPriceLevelById(int ticketPriceLevelId)
+        public override async Task Delete(int id)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @TicketPriceLevelId";
-            return _dataAccess.QueryFirstOrDefault<TicketPriceLevel>(sql, new { TicketPriceLevelId = ticketPriceLevelId });
-        }
-
-        public void AddTicketPriceLevel(TicketPriceLevel ticketPriceLevel)
-        {
-            const string sql = $"INSERT INTO {TableName} (Name, Price) VALUES (@Name, @Price)";
-            _dataAccess.Execute(sql, ticketPriceLevel);
-        }
-
-        public void UpdateTicketPriceLevel(TicketPriceLevel ticketPriceLevel)
-        {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, Price = @Price WHERE Id = @Id";
-            _dataAccess.Execute(sql, ticketPriceLevel);
-        }
-
-        public void DeleteTicketPriceLevel(int ticketPriceLevelId)
-        {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @TicketPriceLevelId";
-            _dataAccess.Execute(sql, new { TicketPriceLevelId = ticketPriceLevelId });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @TicketPriceLevelId";
+            await ExecuteAsync(sql, new { TicketPriceLevelId = id });
+            RefreshCache();
         }
     }
 }

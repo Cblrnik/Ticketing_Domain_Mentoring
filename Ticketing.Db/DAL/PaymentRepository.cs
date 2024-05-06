@@ -1,51 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ticketing.Db.Models;
+﻿using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class PaymentRepository
+    public class PaymentRepository : Repository<Payment>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Payment";
 
-        public PaymentRepository(IConnectionStringProvider connectionStringProvider)
+        public PaymentRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider,
+            "Payment")
+        {}
+
+        public override async Task<int> Create(Payment entity)
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            var sql = $"INSERT INTO [{TableName}] (Status, Amount) VALUES (@Status, @Amount)";
+            RefreshCache();
+            return await ExecuteAsync(sql, entity);
         }
 
-        public IEnumerable<Payment> GetAllPayments()
+        public override async Task Update(Payment entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<Payment>(sql);
+            var sql = $"UPDATE [{TableName}] SET Status = @Status, Amount = @Amount WHERE Id = @Id";
+            await ExecuteAsync(sql, entity);
+            RefreshCache();
         }
 
-        public Payment GetPaymentById(int paymentId)
+        public override async Task Delete(int id)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @PaymentId";
-            return _dataAccess.QueryFirstOrDefault<Payment>(sql, new { PaymentId = paymentId });
-        }
-
-        public void AddPayment(Payment payment)
-        {
-            const string sql = $"INSERT INTO {TableName} (Status, Amount) VALUES (@Status, @Amount)";
-            _dataAccess.Execute(sql, payment);
-        }
-
-        public void UpdatePayment(Payment payment)
-        {
-            const string sql = $"UPDATE {TableName} SET Status = @Status, Amount = @Amount WHERE Id = @Id";
-            _dataAccess.Execute(sql, payment);
-        }
-
-        public void DeletePayment(int paymentId)
-        {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @PaymentId";
-            _dataAccess.Execute(sql, new { PaymentId = paymentId });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @PaymentId";
+            await ExecuteAsync(sql, new { CustomerId = id });
+            RefreshCache();
         }
     }
 }

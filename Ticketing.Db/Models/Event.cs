@@ -1,6 +1,6 @@
 ﻿namespace Ticketing.Db.Models
 {
-    public class Event
+    public class Event : IIdentity
     {
         public int Id { get; set; }
 

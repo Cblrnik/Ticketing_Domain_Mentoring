@@ -3,44 +3,32 @@ using Ticketing.Db.Providers;
 
 namespace Ticketing.Db.DAL
 {
-    public class CustomerRepository
+    public class CustomerRepository : Repository<Customer>
     {
-        private readonly DataAccess _dataAccess;
-        private const string TableName = "Customer";
 
-        public CustomerRepository(IConnectionStringProvider connectionStringProvider)
+        public CustomerRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider,
+            "Customer")
+        {}
+
+        public override async Task<int> Create(Customer entity)
         {
-            _dataAccess = new DataAccess(connectionStringProvider.GetConnectionString());
+            var sql = $"INSERT INTO [{TableName}] (Name, Email) VALUES (@Name, @Email)";
+            RefreshCache();
+            return await ExecuteAsync(sql, entity);
         }
 
-        public IEnumerable<Customer> GetAllCustomers()
+        public override async Task Update(Customer entity)
         {
-            const string sql = $"SELECT * FROM {TableName}";
-            return _dataAccess.Query<Customer>(sql);
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, Email = @Email WHERE Id = @Id";
+            await ExecuteAsync(sql, entity);
+            RefreshCache();
         }
 
-        public Customer GetCustomerById(int customerId)
+        public override async Task Delete(int id)
         {
-            const string sql = $"SELECT * FROM {TableName} WHERE Id = @CustomerId";
-            return _dataAccess.QueryFirstOrDefault<Customer>(sql, new { CustomerId = customerId });
-        }
-
-        public void AddCustomer(Customer customer)
-        {
-            const string sql = $"INSERT INTO {TableName} (Name, Email) VALUES (@Name, @Email)";
-            _dataAccess.Execute(sql, customer);
-        }
-
-        public void UpdateCustomer(Customer customer)
-        {
-            const string sql = $"UPDATE {TableName} SET Name = @Name, Email = @Email WHERE Id = @Id";
-            _dataAccess.Execute(sql, customer);
-        }
-
-        public void DeleteCustomer(int customerId)
-        {
-            const string sql = $"DELETE FROM {TableName} WHERE Id = @CustomerId";
-            _dataAccess.Execute(sql, new { CustomerId = customerId });
+            var sql = $"DELETE FROM [{TableName}] WHERE Id = @CustomerId";
+            await ExecuteAsync(sql, new { CustomerId = id });
+            RefreshCache();
         }
     }
 }

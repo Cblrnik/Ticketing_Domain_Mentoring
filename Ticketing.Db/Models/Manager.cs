@@ -1,8 +1,8 @@
 ﻿namespace Ticketing.Db.Models
 {
-    public class Manager
+    public class Manager : IIdentity
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
 
         public string? Name { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿namespace Ticketing.Db.Models
 {
-    public class Section
+    public class Section : IIdentity
     {
         public int Id { get; set; }
 
