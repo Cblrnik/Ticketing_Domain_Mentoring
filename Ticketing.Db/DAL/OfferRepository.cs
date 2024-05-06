@@ -24,9 +24,9 @@ namespace Ticketing.Db.DAL
 
         public override async Task<int> Create(Offer entity)
         {
-            var sql = $"INSERT INTO [{TableName}] (Name, Price, EventId) VALUES (@Name, @Price, @EventId)";
+            var sql = $"INSERT INTO [{TableName}] (Name, EventId) VALUES (@Name, @EventId)";
             RefreshCache();
-            var id = await ExecuteAsync(sql, new { entity.Name, entity.Price, entity.Event?.Id });
+            var id = await ExecuteAsync(sql, new { entity.Name, entity.Event?.Id });
 
             if (entity.Seats != null) await CreateSeatsOffer(entity.Seats, id);
             if (entity.PriceLevels != null) await CreateTicketPriceLevelsOffer(entity.PriceLevels, id);
@@ -36,8 +36,8 @@ namespace Ticketing.Db.DAL
 
         public override async Task Update(Offer entity)
         {
-            var sql = $"UPDATE [{TableName}] SET Name = @Name, Price = @Price, EventId = @EventId WHERE Id = @Id";
-            await ExecuteAsync(sql, new { entity.Name, entity.Price, entity.Event?.Id });
+            var sql = $"UPDATE [{TableName}] SET Name = @Name, EventId = @EventId WHERE Id = @Id";
+            await ExecuteAsync(sql, new { entity.Name, entity.Event?.Id });
             RefreshCache();
 
             if (entity.Seats != null) await CreateSeatsOffer(entity.Seats, entity.Id);

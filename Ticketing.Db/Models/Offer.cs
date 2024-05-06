@@ -6,8 +6,6 @@
 
         public string? Name { get; set; }
 
-        public double Price { get; set; }
-
         public Event? Event { get; set; }
 
         public IEnumerable<Seat>? Seats { get; set; }
