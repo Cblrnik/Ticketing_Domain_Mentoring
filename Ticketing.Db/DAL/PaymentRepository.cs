@@ -10,21 +10,21 @@ namespace Ticketing.Db.DAL
             "Payment")
         {}
 
-        public override async Task<int> Create(Payment entity)
+        public override async Task<int> CreateAsync(Payment entity)
         {
             var sql = $"INSERT INTO [{TableName}] (Status, Amount) VALUES (@Status, @Amount)";
             RefreshCache();
             return await ExecuteAsync(sql, entity);
         }
 
-        public override async Task Update(Payment entity)
+        public override async Task UpdateAsync(Payment entity)
         {
             var sql = $"UPDATE [{TableName}] SET Status = @Status, Amount = @Amount WHERE Id = @Id";
             await ExecuteAsync(sql, entity);
             RefreshCache();
         }
 
-        public override async Task Delete(int id)
+        public override async Task DeleteAsync(int id)
         {
             var sql = $"DELETE FROM [{TableName}] WHERE Id = @PaymentId";
             await ExecuteAsync(sql, new { CustomerId = id });

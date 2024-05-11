@@ -20,7 +20,7 @@ namespace Ticketing.Api.Client.Controllers
         [HttpGet]
         public async Task<HttpResponseMessage> GetEventsAsync()
         {
-            var events = await _eventRepository.GetAll();
+            var events = await _eventRepository.GetAllAsync();
             return Request.CreateResponse(HttpStatusCode.OK, events);
         }
 
@@ -28,29 +28,27 @@ namespace Ticketing.Api.Client.Controllers
         [Route("{eventId:int}/sections/{sectionId:int}/seats")]
         public async Task<HttpResponseMessage> GetSectionsAsync(int eventId, int sectionId)
         {
-            var seats = (await _eventRepository.GetById(eventId)).Venue?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Seats?.ToList();
+            var seats = (await _eventRepository.GetByIdAsync(eventId)).Venue?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Seats?.ToList();
 
-            var prices = (await _offerRepository.GetAll()).Where(offer =>
+            var prices = (await _offerRepository.GetAllAsync()).Where(offer =>
                 seats != null && seats.Any(seat => 
                     offer.Seats != null && offer.Seats.Contains(seat))).ToList();
 
             if (seats == null)
             {
                 return Request.CreateResponse(HttpStatusCode.BadRequest);
-            } 
-            else
-            {
-                var response = seats.Select(seat => new
-                {
-                    seat.Id,
-                    seat.Name,
-                    SectionId = sectionId,
-                    seat.SeatStatus,
-                    PriceOptions = prices.FirstOrDefault(price => price.Seats.Contains(seat)).PriceLevels
-                });
-
-                return Request.CreateResponse(HttpStatusCode.OK, response);
             }
+
+            var response = seats.Select(seat => new
+            {
+                seat.Id,
+                seat.Name,
+                SectionId = sectionId,
+                seat.SeatStatus,
+                PriceOptions = prices.FirstOrDefault(price => price.Seats.Contains(seat)).PriceLevels
+            });
+
+            return Request.CreateResponse(HttpStatusCode.OK, response);
         }
     }
 }

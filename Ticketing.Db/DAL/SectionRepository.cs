@@ -12,9 +12,9 @@ namespace Ticketing.Db.DAL
             _seatRepository = seatRepository;
         }
 
-        public override async Task<ICollection<Section>> GetAll()
+        public override async Task<ICollection<Section>> GetAllAsync()
         {
-            await base.GetAll();
+            await base.GetAllAsync();
 
             foreach (var section in Entities)
             {
@@ -24,7 +24,7 @@ namespace Ticketing.Db.DAL
             return Entities;
         }
 
-        public override async Task<int> Create(Section entity)
+        public override async Task<int> CreateAsync(Section entity)
         {
             var sql = $"INSERT INTO [{TableName}] (Name) VALUES (@Name)";
             RefreshCache();
@@ -34,7 +34,7 @@ namespace Ticketing.Db.DAL
             return entity.Id;
         }
 
-        public override async Task Update(Section entity)
+        public override async Task UpdateAsync(Section entity)
         {
             var sql = $"UPDATE [{TableName}] SET Name = @Name WHERE Id = @Id";
             await ExecuteAsync(sql, entity);
@@ -43,7 +43,7 @@ namespace Ticketing.Db.DAL
             if (entity.Seats != null) await UpdateSeatsSection(entity.Seats, entity.Id);
         }
 
-        public override async Task Delete(int id)
+        public override async Task DeleteAsync(int id)
         {
             var sql = $"DELETE FROM [{TableName}] WHERE Id = @Id";
             await ExecuteAsync(sql, new { Id = id });
@@ -62,7 +62,7 @@ namespace Ticketing.Db.DAL
         {
             foreach (var seat in seats)
             {
-                await _seatRepository.Create(seat);
+                await _seatRepository.CreateAsync(seat);
             }
 
             await UpdateSeatsSection(seats, sectionId);
@@ -75,7 +75,7 @@ namespace Ticketing.Db.DAL
             var ids = await QueryAsync<int>(sql, new { Id = id });
             foreach (var seatId in ids)
             {
-                await _seatRepository.Delete(seatId);
+                await _seatRepository.DeleteAsync(seatId);
             }
         }
 

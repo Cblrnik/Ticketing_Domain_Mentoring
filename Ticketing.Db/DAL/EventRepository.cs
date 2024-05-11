@@ -9,7 +9,7 @@ namespace Ticketing.Db.DAL
         public EventRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Event")
         {}
 
-        public override async Task<int> Create(Event entity)
+        public override async Task<int> CreateAsync(Event entity)
         {
             var sql = $"INSERT INTO [{TableName}] (Name, Description, VenueId, StartDate, EndDate) VALUES (@Name, @Description, @VenueId, @StartDate, @EndDate)";
             RefreshCache();
@@ -25,7 +25,7 @@ namespace Ticketing.Db.DAL
             return entity.Id;
         }
 
-        public override async Task Update(Event entity)
+        public override async Task UpdateAsync(Event entity)
         {
             var sql = $"UPDATE [{TableName}] SET Name = @Name, Description = @Description, VenueId = @VenueId, StartDate = @StartDate, EndDate = @EndDate WHERE Id = @Id";
             await ExecuteAsync(sql, new
@@ -40,7 +40,7 @@ namespace Ticketing.Db.DAL
             RefreshCache();
         }
 
-        public override async Task Delete(int id)
+        public override async Task DeleteAsync(int id)
         {
             var sql = $"DELETE FROM [{TableName}] WHERE Id = @EventId";
             await ExecuteAsync(sql, new { EventId = id });

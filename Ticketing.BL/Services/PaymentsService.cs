@@ -18,11 +18,11 @@ namespace Ticketing.BL.Services
 
         public async Task UpdatePaymentStatusAsync(int paymentId, PaymentStatus status, SeatStatus seatStatus)
         {
-            var payment = await _paymentRepository.GetById(paymentId);
+            var payment = await _paymentRepository.GetByIdAsync(paymentId);
             payment.Status = status;
-            await _paymentRepository.Update(payment);
+            await _paymentRepository.UpdateAsync(payment);
 
-            var tickets = (await _orderRepository.GetAll().ConfigureAwait(false)).FirstOrDefault(order => order.Payment?.Id == paymentId)?.Tickets?.ToList();
+            var tickets = (await _orderRepository.GetAllAsync().ConfigureAwait(false)).FirstOrDefault(order => order.Payment?.Id == paymentId)?.Tickets?.ToList();
 
             if (tickets != null)
             {
@@ -30,7 +30,7 @@ namespace Ticketing.BL.Services
                 foreach (var seat in seats)
                 {
                     seat.SeatStatus = seatStatus;
-                    await _seatRepository.Update(seat);
+                    await _seatRepository.UpdateAsync(seat);
                 }
             }
         }

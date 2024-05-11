@@ -10,21 +10,21 @@ namespace Ticketing.Db.DAL
             "Customer")
         {}
 
-        public override async Task<int> Create(Customer entity)
+        public override async Task<int> CreateAsync(Customer entity)
         {
             var sql = $"INSERT INTO [{TableName}] (Name, Email) VALUES (@Name, @Email)";
             RefreshCache();
             return await ExecuteAsync(sql, entity);
         }
 
-        public override async Task Update(Customer entity)
+        public override async Task UpdateAsync(Customer entity)
         {
             var sql = $"UPDATE [{TableName}] SET Name = @Name, Email = @Email WHERE Id = @Id";
             await ExecuteAsync(sql, entity);
             RefreshCache();
         }
 
-        public override async Task Delete(int id)
+        public override async Task DeleteAsync(int id)
         {
             var sql = $"DELETE FROM [{TableName}] WHERE Id = @CustomerId";
             await ExecuteAsync(sql, new { CustomerId = id });

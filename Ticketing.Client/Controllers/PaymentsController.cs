@@ -22,7 +22,7 @@ namespace Ticketing.Api.Client.Controllers
         [Route("{paymentId:int}")]
         public HttpResponseMessage GetStatus(int paymentId)
         {
-            return Request.CreateResponse(HttpStatusCode.OK, _paymentRepository.GetById(paymentId).Status);
+            return Request.CreateResponse(HttpStatusCode.OK, _paymentRepository.GetByIdAsync(paymentId).Result.Status);
         }
 
         [HttpPost]
