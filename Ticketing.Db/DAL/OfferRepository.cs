@@ -8,9 +8,9 @@ namespace Ticketing.Db.DAL
         public OfferRepository(IConnectionStringProvider connectionStringProvider) : base(connectionStringProvider, "Offer")
         {}
 
-        public override async Task<ICollection<Offer>> GetAll()
+        public override async Task<ICollection<Offer>> GetAllAsync()
         {
-            await base.GetAll();
+            await base.GetAllAsync();
 
             foreach (var offer in Entities)
             {
@@ -22,7 +22,7 @@ namespace Ticketing.Db.DAL
             return Entities;
         }
 
-        public override async Task<int> Create(Offer entity)
+        public override async Task<int> CreateAsync(Offer entity)
         {
             var sql = $"INSERT INTO [{TableName}] (Name, EventId) VALUES (@Name, @EventId)";
             RefreshCache();
@@ -34,7 +34,7 @@ namespace Ticketing.Db.DAL
             return id;
         }
 
-        public override async Task Update(Offer entity)
+        public override async Task UpdateAsync(Offer entity)
         {
             var sql = $"UPDATE [{TableName}] SET Name = @Name, EventId = @EventId WHERE Id = @Id";
             await ExecuteAsync(sql, new { entity.Name, entity.Event?.Id });
@@ -44,7 +44,7 @@ namespace Ticketing.Db.DAL
             if (entity.PriceLevels != null) await CreateTicketPriceLevelsOffer(entity.PriceLevels, entity.Id);
         }
 
-        public override async Task Delete(int id)
+        public override async Task DeleteAsync(int id)
         {
             var sql = $"DELETE FROM [{TableName}] WHERE Id = @Id";
             await ExecuteAsync(sql, new { Id = id });

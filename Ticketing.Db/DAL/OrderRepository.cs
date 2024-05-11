@@ -12,9 +12,9 @@ namespace Ticketing.Db.DAL
             _ticketRepository = ticketRepository;
         }
 
-        public override async Task<ICollection<Order>> GetAll()
+        public override async Task<ICollection<Order>> GetAllAsync()
         {
-            await base.GetAll();
+            await base.GetAllAsync();
 
             foreach (var order in Entities)
             {
@@ -26,7 +26,7 @@ namespace Ticketing.Db.DAL
             return Entities;
         }
 
-        public override async Task<int> Create(Order entity)
+        public override async Task<int> CreateAsync(Order entity)
         {
             var sql = $"INSERT INTO [{TableName}] (CustomerId) VALUES (@CustomerId)";
             RefreshCache();
@@ -37,7 +37,7 @@ namespace Ticketing.Db.DAL
             return id;
         }
        
-        public override async Task Update(Order entity)
+        public override async Task UpdateAsync(Order entity)
         {
             var sql = $"UPDATE [{TableName}] SET CustomerId = @CustomerId WHERE Id = @Id";
             RefreshCache();
@@ -46,7 +46,7 @@ namespace Ticketing.Db.DAL
             if (entity.Tickets != null) await UpdateTicketsOrderId(entity.Tickets, entity.Id);
         }
 
-        public override async Task Delete(int id)
+        public override async Task DeleteAsync(int id)
         {
             var sql = $"DELETE FROM [{TableName}] WHERE Id = @Id";
             await ExecuteAsync(sql, new { Id = id });
@@ -71,7 +71,7 @@ namespace Ticketing.Db.DAL
             var sql = "SELECT Id FROM Ticket WHERE OrderId = @OrderId";
             var ids = await QueryAsync<int>(sql, new { OrderId = orderId });
 
-            return (await _ticketRepository.GetAll()).Where(ticket => ids.Contains(ticket.Id));
+            return (await _ticketRepository.GetAllAsync()).Where(ticket => ids.Contains(ticket.Id));
         }
 
         private async Task ClearTicketsOrderId(int orderId)

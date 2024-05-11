@@ -55,7 +55,7 @@ namespace Ticketing.Tests
                 },
             };
 
-            venueRepositoryMock.Setup(o => o.GetAll()).ReturnsAsync(venues);
+            venueRepositoryMock.Setup(o => o.GetAllAsync()).ReturnsAsync(venues);
 
             var response = await controller.GetVenuesAsync();
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -107,7 +107,7 @@ namespace Ticketing.Tests
                 }
             };
 
-            venueRepositoryMock.Setup(p => p.GetById(1)).ReturnsAsync(venue);
+            venueRepositoryMock.Setup(p => p.GetByIdAsync(1)).ReturnsAsync(venue);
 
 
             var response = await controller.GetSectionsAsync(venue.Id);
