@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Ticketing Domain\Ticketing.Caching\Ticketing.Caching.csproj" />
     <ProjectReference Include="..\Ticketing.BL\Ticketing.BL.csproj" />
     <ProjectReference Include="..\Ticketing.Db\Ticketing.Db.csproj" />
   </ItemGroup>
