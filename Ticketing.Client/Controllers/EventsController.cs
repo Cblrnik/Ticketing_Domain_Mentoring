@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Web.Http;
+using Ticketing.Caching;
 using Ticketing.Db.DAL;
 using Ticketing.Db.Models;
 
@@ -18,6 +19,7 @@ namespace Ticketing.Api.Client.Controllers
         }
 
         [HttpGet]
+        [Cached(60)]
         public async Task<HttpResponseMessage> GetEventsAsync()
         {
             var events = await _eventRepository.GetAllAsync();
@@ -26,6 +28,7 @@ namespace Ticketing.Api.Client.Controllers
 
         [HttpGet]
         [Route("{eventId:int}/sections/{sectionId:int}/seats")]
+        [Cached(60)]
         public async Task<HttpResponseMessage> GetSectionsAsync(int eventId, int sectionId)
         {
             var seats = (await _eventRepository.GetByIdAsync(eventId)).Venue?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Seats?.ToList();
