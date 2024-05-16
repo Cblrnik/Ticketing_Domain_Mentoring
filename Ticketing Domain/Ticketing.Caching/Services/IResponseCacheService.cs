@@ -8,10 +8,10 @@ namespace Ticketing.Caching.Services
 {
     public interface IResponseCacheService
     {
-        Task CacheResponseAsync(string key, object value, uint timeToLiveInSeconds);
+        Task CacheResponseAsync(string key, object? value, uint timeToLiveInSeconds);
 
         Task<string> GetCachedResponseAsync(string key);
 
-        void DeleteByKeys(string pathAndQuery);
+        Task DeleteByKey(string key);
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
+using Microsoft.Extensions.Caching.Distributed;
 using Ticketing.BL.Services;
 using Ticketing.Caching.Services;
 using Ticketing.Db.DAL;
@@ -37,13 +38,9 @@ public class Program
 
     private static void ConfigureStorage(IConfiguration configuration, IServiceCollection services)
     {
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = configuration.GetConnectionString("Redis");
-            options.InstanceName = "RESTRedisProj";
-        });
 
-        services.AddSingleton<IResponseCacheService, RedisCacheService>();
+        services.AddSingleton<IDistributedCache, MemoryDistributedCache>();
+        services.AddSingleton<IResponseCacheService, InMemoryCacheService>();
 
         services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>(x => new ConnectionStringProvider("Server=(localdb);Database=Ticketing;Trusted_Connection=True;MultipleActiveResultSets=true"));
         services.AddTransient<Repository<Event>, EventRepository>();
