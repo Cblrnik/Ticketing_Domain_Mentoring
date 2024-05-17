@@ -17,7 +17,7 @@ namespace Ticketing.Db.DAL
         {
             TableName = tableName;
             _connectionString = connectionStringProvider.GetConnectionString();
-            Entities = GetAll().Result;
+            Entities = GetAllAsync().Result;
         }
 
         public IDbConnection GetConnection()
@@ -32,11 +32,11 @@ namespace Ticketing.Db.DAL
             return (await connection.QueryAsync<Y>(sql, param)).ToList();
         }
 
-        protected async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        protected async Task<Y> QueryFirstOrDefaultAsync<Y>(string sql, object? param = null)
         {
             using var connection = GetConnection();
             connection.Open();
-            return (await connection.QueryFirstOrDefaultAsync<T>(sql, param))!;
+            return (await connection.QueryFirstOrDefaultAsync<Y>(sql, param))!;
         }
 
         protected async Task<int> ExecuteAsync(string sql, object? param = null)
@@ -47,17 +47,17 @@ namespace Ticketing.Db.DAL
         }
 
 
-        public async Task<T> GetById(int id)
+        public virtual async Task<T> GetByIdAsync(int id)
         {
             if (IsUpdated)
             {
-                await GetAll();
+                await GetAllAsync();
             }
 
             return Entities.FirstOrDefault(entity => entity.Id == id)!;
         }
 
-        public virtual async Task<ICollection<T>> GetAll()
+        public virtual async Task<ICollection<T>> GetAllAsync()
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (Entities != null && !IsUpdated) { return Entities; }
@@ -69,11 +69,11 @@ namespace Ticketing.Db.DAL
             return Entities;
         }
 
-        public abstract Task<int> Create(T entity);
+        public abstract Task<int> CreateAsync(T entity);
 
-        public abstract Task Update(T entity);
+        public abstract Task UpdateAsync(T entity);
 
-        public abstract Task Delete(int id);
+        public abstract Task DeleteAsync(int id);
 
         public void RefreshCache()
         {

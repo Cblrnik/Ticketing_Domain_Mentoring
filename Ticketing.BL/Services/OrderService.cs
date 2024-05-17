@@ -6,15 +6,13 @@ namespace Ticketing.BL.Services
 {
     public class OrderService
     {
-        private readonly Repository<Order> _orderRepository;
         private readonly Repository<Seat> _seatRepository;
         private readonly Repository<Offer> _offerRepository;
         private readonly Repository<TicketPriceLevel> _ticketPriceLevelRepository;
         private readonly CartProvider _cartProvider;
 
-        public OrderService(Repository<Order> orderRepository, Repository<Seat> seatRepository, Repository<Offer> offerRepository, Repository<TicketPriceLevel> ticketPriceLevelRepository, CartProvider cartProvider)
+        public OrderService(Repository<Seat> seatRepository, Repository<Offer> offerRepository, Repository<TicketPriceLevel> ticketPriceLevelRepository, CartProvider cartProvider)
         {
-            _orderRepository = orderRepository;
             _seatRepository = seatRepository;
             _offerRepository = offerRepository;
             _ticketPriceLevelRepository = ticketPriceLevelRepository;
@@ -44,7 +42,7 @@ namespace Ticketing.BL.Services
 
         private async Task<Offer> GetOfferAsync(int eventId, int seatId)
         {
-            return (await _offerRepository.GetAll()).ToList().FirstOrDefault(offer => offer.Event?.Id == eventId && offer.Seats!.Any(item => item.Id == seatId))!;
+            return (await _offerRepository.GetAllAsync()).ToList().FirstOrDefault(offer => offer.Event?.Id == eventId && offer.Seats!.Any(item => item.Id == seatId))!;
         }
 
         public async Task DeleteSeat(Guid cartId, int eventId, int seatId)
@@ -63,13 +61,13 @@ namespace Ticketing.BL.Services
 
             var seatIds = cart.OrderDetails.Select(details => details.SeatId);
 
-            var seats = (await _seatRepository.GetAll()).Where(seat => seatIds.Contains(seat.Id));
+            var seats = (await _seatRepository.GetAllAsync()).Where(seat => seatIds.Contains(seat.Id));
 
             foreach (var seat in seats)
             {
                 seat.SeatStatus = SeatStatus.Booked;
 
-                await _seatRepository.Update(seat);
+                await _seatRepository.UpdateAsync(seat);
             }
         }
 
@@ -78,7 +76,7 @@ namespace Ticketing.BL.Services
             var amount = 0m;
             foreach (var detail in cart.OrderDetails)
             {
-                var price = await _ticketPriceLevelRepository.GetById(detail.PriceId);
+                var price = await _ticketPriceLevelRepository.GetByIdAsync(detail.PriceId);
                 amount += price.Price;
             }
 
