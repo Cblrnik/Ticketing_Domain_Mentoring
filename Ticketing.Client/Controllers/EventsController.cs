@@ -36,7 +36,7 @@ namespace Ticketing.Api.Client.Controllers
         [HttpGet]
         [Route("{eventId:int}/sections/{sectionId:int}/seats")]
         [Cached(60)]
-        public async Task<HttpResponseMessage> GetSectionsAsync(int eventId, int sectionId)
+        public async Task<HttpResponseMessage> GetSeatsBySectionAsync(int eventId, int sectionId)
         {
             var seats = (await _eventRepository.GetByIdAsync(eventId)).Venue?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Seats?.ToList();
 
@@ -60,8 +60,7 @@ namespace Ticketing.Api.Client.Controllers
 
             var response = Request.CreateResponse(HttpStatusCode.OK, responseSeats);
 
-            var date = DateTime.Now.AddSeconds(60);
-            response.Headers.Add("Expires", date.ToLongDateString());
+            response.Headers.Add("Cache-Control", "no-cache");
 
             return response;
         }
