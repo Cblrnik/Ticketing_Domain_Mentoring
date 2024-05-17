@@ -5,13 +5,15 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ticketing.Db", "..\Ticketing.Db\Ticketing.Db.csproj", "{A2E2F4CA-30A6-49A1-AAC1-4365A14C03CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.Api.Client", "..\Ticketing.Client\Ticketing.Api.Client.csproj", "{7075AC3D-A1D7-4BC2-9456-E70010A4B93A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ticketing.Api.Client", "..\Ticketing.Client\Ticketing.Api.Client.csproj", "{7075AC3D-A1D7-4BC2-9456-E70010A4B93A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.BL", "..\Ticketing.BL\Ticketing.BL.csproj", "{37B98198-2532-4F1E-B4E5-F6A2A2FD010C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ticketing.BL", "..\Ticketing.BL\Ticketing.BL.csproj", "{37B98198-2532-4F1E-B4E5-F6A2A2FD010C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C791BC06-A349-4AC8-A964-26421E45D1CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.Tests", "Ticketing.Tests\Ticketing.Tests.csproj", "{8346CF47-7FA8-48AD-AD78-2E526B10271A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ticketing.Tests", "Ticketing.Tests\Ticketing.Tests.csproj", "{8346CF47-7FA8-48AD-AD78-2E526B10271A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.Caching", "Ticketing.Caching\Ticketing.Caching.csproj", "{8B032DC0-5631-4E61-9815-225DD4D26B44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{8346CF47-7FA8-48AD-AD78-2E526B10271A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8346CF47-7FA8-48AD-AD78-2E526B10271A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8346CF47-7FA8-48AD-AD78-2E526B10271A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

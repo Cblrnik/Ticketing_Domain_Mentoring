@@ -1,25 +1,61 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.Extensions.Configuration;
+using System.Reflection;
+using Ticketing.BL.Services;
+using Ticketing.Caching.Services;
+using Ticketing.Db.DAL;
+using Ticketing.Db.Models;
+using Ticketing.Db.Providers;
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    private static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        ConfigureStorage(builder.Configuration, builder.Services);
+
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        app.UseHttpsRedirection();
+
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        app.Run();
+    }
+
+    private static void ConfigureStorage(IConfiguration configuration, IServiceCollection services)
+    {
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("Redis");
+            options.InstanceName = "RESTRedisProj";
+        });
+
+        services.AddSingleton<IResponseCacheService, RedisCacheService>();
+
+        services.AddSingleton<IConnectionStringProvider, ConnectionStringProvider>(x => new ConnectionStringProvider("Server=(localdb);Database=Ticketing;Trusted_Connection=True;MultipleActiveResultSets=true"));
+        services.AddTransient<Repository<Event>, EventRepository>();
+        services.AddTransient<Repository<Offer>, OfferRepository>();
+        services.AddTransient<Repository<Manager>, ManagerRepository>();
+        services.AddTransient<Repository<Order>, OrderRepository>();
+        services.AddTransient<Repository<Payment>, PaymentRepository>();
+        services.AddTransient<Repository<TicketPriceLevel>, TicketPriceLevelRepository>();
+        services.AddTransient<Repository<Section>, SectionRepository>();
+        services.AddTransient<Repository<Ticket>, TicketRepository>();
+        services.AddTransient<Repository<Venue>, VenueRepository>();
+        services.AddTransient<Repository<Customer>, CustomerRepository>();
+        services.AddTransient<Repository<Seat>, SeatRepository>();
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
