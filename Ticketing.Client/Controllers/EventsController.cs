@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Web.Http;
 using Ticketing.Caching;
 using Ticketing.Db.DAL;
@@ -23,13 +24,19 @@ namespace Ticketing.Api.Client.Controllers
         public async Task<HttpResponseMessage> GetEventsAsync()
         {
             var events = await _eventRepository.GetAllAsync();
-            return Request.CreateResponse(HttpStatusCode.OK, events);
+            
+            var response = Request.CreateResponse(HttpStatusCode.OK, events);
+
+            var date = DateTime.Now.AddSeconds(60);
+            response.Headers.Add("Expires", date.ToLongDateString());
+
+            return response;
         }
 
         [HttpGet]
         [Route("{eventId:int}/sections/{sectionId:int}/seats")]
         [Cached(60)]
-        public async Task<HttpResponseMessage> GetSectionsAsync(int eventId, int sectionId)
+        public async Task<HttpResponseMessage> GetSeatsBySectionAsync(int eventId, int sectionId)
         {
             var seats = (await _eventRepository.GetByIdAsync(eventId)).Venue?.Sections?.FirstOrDefault(section => section.Id == sectionId)?.Seats?.ToList();
 
@@ -42,7 +49,7 @@ namespace Ticketing.Api.Client.Controllers
                 return Request.CreateResponse(HttpStatusCode.BadRequest);
             }
 
-            var response = seats.Select(seat => new
+            var responseSeats = seats.Select(seat => new
             {
                 seat.Id,
                 seat.Name,
@@ -51,7 +58,11 @@ namespace Ticketing.Api.Client.Controllers
                 PriceOptions = prices.FirstOrDefault(price => price.Seats.Contains(seat)).PriceLevels
             });
 
-            return Request.CreateResponse(HttpStatusCode.OK, response);
+            var response = Request.CreateResponse(HttpStatusCode.OK, responseSeats);
+
+            response.Headers.Add("Cache-Control", "no-cache");
+
+            return response;
         }
     }
 }

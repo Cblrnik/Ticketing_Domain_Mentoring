@@ -14,10 +14,10 @@ namespace Ticketing.Caching
             var cacheService = ServiceProviderServiceExtensions.GetRequiredService(
                 context.HttpContext.RequestServices,
                 typeof(IResponseCacheService)) as IResponseCacheService;
-            if (executedContext.Result is OkObjectResult ok)
+            if (executedContext.Result is OkObjectResult)
             {
-                var businessCache = new BusinessRedisCacheService(cacheService);
-                businessCache.DeleteByKeys($"{context.HttpContext.Request.Path}|{ok.Value}");
+                var cacheKey = KeyCacheGenerator.GenerateKey(context.HttpContext.Request);
+                cacheService?.DeleteByKey(cacheKey);
             }
         }
     }
