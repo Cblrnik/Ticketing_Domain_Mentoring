@@ -1,4 +1,5 @@
-﻿using Ticketing.Db.DAL;
+﻿using System.Transactions;
+using Ticketing.Db.DAL;
 using Ticketing.Db.Models;
 using Ticketing.Db.Providers;
 
@@ -57,18 +58,34 @@ namespace Ticketing.BL.Services
 
         public async Task BookSeatsAsync(Guid cartId)
         {
+            var options = new TransactionOptions
+            {
+                IsolationLevel = IsolationLevel.Serializable
+            };
+
             var cart = GetById(cartId);
 
+            using var scope = new TransactionScope(TransactionScopeOption.Required, options);
             var seatIds = cart.OrderDetails.Select(details => details.SeatId);
-
             var seats = (await _seatRepository.GetAllAsync()).Where(seat => seatIds.Contains(seat.Id));
 
             foreach (var seat in seats)
             {
-                seat.SeatStatus = SeatStatus.Booked;
+                if (seat.SeatStatus == SeatStatus.Booked)
+                {
+                    throw new InvalidOperationException("Seat is already booked");
+                }
 
+                if (seat.SeatStatus == SeatStatus.Sold)
+                {
+                    throw new InvalidOperationException("Seat is already sold");
+                }
+
+                seat.SeatStatus = SeatStatus.Booked;
                 await _seatRepository.UpdateAsync(seat);
             }
+
+            scope.Complete();
         }
 
         private async Task CalculateAmountAsync(Cart cart)
