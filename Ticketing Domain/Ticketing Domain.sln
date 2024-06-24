@@ -13,7 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C791BC06
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ticketing.Tests", "Ticketing.Tests\Ticketing.Tests.csproj", "{8346CF47-7FA8-48AD-AD78-2E526B10271A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.Caching", "Ticketing.Caching\Ticketing.Caching.csproj", "{8B032DC0-5631-4E61-9815-225DD4D26B44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ticketing.Caching", "Ticketing.Caching\Ticketing.Caching.csproj", "{8B032DC0-5631-4E61-9815-225DD4D26B44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.Notification", "Ticketing.Notification\Ticketing.Notification.csproj", "{2F51699E-C057-4B30-9537-9E066550D24F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ticketing.NotificationHandler", "Ticketing.NotificationHandler\Ticketing.NotificationHandler.csproj", "{FE31A3C3-F14A-4FE2-89D9-D4BED0EAB707}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,14 @@ Global
 		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B032DC0-5631-4E61-9815-225DD4D26B44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F51699E-C057-4B30-9537-9E066550D24F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F51699E-C057-4B30-9537-9E066550D24F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F51699E-C057-4B30-9537-9E066550D24F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F51699E-C057-4B30-9537-9E066550D24F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE31A3C3-F14A-4FE2-89D9-D4BED0EAB707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE31A3C3-F14A-4FE2-89D9-D4BED0EAB707}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE31A3C3-F14A-4FE2-89D9-D4BED0EAB707}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE31A3C3-F14A-4FE2-89D9-D4BED0EAB707}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

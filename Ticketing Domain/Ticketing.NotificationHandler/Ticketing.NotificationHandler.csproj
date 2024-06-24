@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ticketing Domain\Ticketing.Notification\Ticketing.Notification.csproj" />
-    <ProjectReference Include="..\Ticketing.Db\Ticketing.Db.csproj" />
+    <ProjectReference Include="..\Ticketing.Notification\Ticketing.Notification.csproj" />
   </ItemGroup>
 
 </Project>
